@@ -3,17 +3,38 @@ import * as querystring from 'querystring'
 import md5 = require('md5')
 import {appId, appSecret} from './private'
 
+const errorMap: any = {
+  52001: '请求超时',
+  52002: '系统错误',
+  52003: '用户认证失败',
+  54000: '必填参数为空',
+  54001: '签名错误',
+  54003: '访问频率受限',
+  54004: '账户余额不足',
+  54005: '长query请求频繁',
+  58000: '客户端IP非法',
+  58001: '译文语言方向不支持',
+  58002: '服务当前已关闭',
+  90107: '认证未通过或未生效',
+}
+
 export const translate = (word: string) => {
   const salt = Math.random()
   const sign = md5(appId + word + salt + appSecret)
+  let from, to
+
+  if (/[a-zA-Z]/g.test(word[0])) {//英译中
+    from = 'en'
+    to = 'zh'
+  } else {//中译英
+    from = 'zh'
+    to = 'en'
+  }
 
   const query: string = querystring.stringify({
     q: word,
-    from: 'en',
-    to: 'zh',
     appid: appId,
-    salt: salt,
-    sign: sign
+    from, to, salt, sign
   })
 
   const options = {
@@ -39,14 +60,12 @@ export const translate = (word: string) => {
       }
       const object: BaiduResult = JSON.parse(string)
       if (object.error_code) {
-        if (object.error_code === '52003') {
-          console.log('用户认证失败')
-        } else {
-          console.error(object.error_msg)
-        }
+        console.log(errorMap[object.error_code] as string || object.error_msg)
         process.exit(2)
       } else {
-        console.log(object.trans_result[0].dst)
+        object.trans_result.map(obj => {
+          console.log(obj.dst)
+        })
         process.exit(0)
       }
     })
