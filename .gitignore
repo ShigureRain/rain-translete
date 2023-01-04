@@ -1,5 +1,8 @@
 /src/private.ts
+/dist/
 /yarn.lock
 node_modules
+tsconfig.json
 .idea
 .vscode
+private.ts

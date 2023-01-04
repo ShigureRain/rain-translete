@@ -3,7 +3,10 @@ import * as querystring from 'querystring'
 import md5 = require('md5')
 import {appId, appSecret} from './private'
 
-const errorMap: any = {
+type ErrorMap = {
+  [key: string]: string
+}
+const errorMap: ErrorMap = {
   52001: '请求超时',
   52002: '系统错误',
   52003: '用户认证失败',
@@ -45,8 +48,8 @@ export const translate = (word: string) => {
   }
 
   const request = https.request(options, (response) => {
-    let chunks: any = []
-    response.on('data', (chunk) => {
+    let chunks: Buffer[] = []
+    response.on('data', (chunk: Buffer) => {
       chunks.push(chunk)
     })
     response.on('end', () => {
